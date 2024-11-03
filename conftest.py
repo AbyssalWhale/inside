@@ -2,7 +2,7 @@ import pytest
 from playwright.sync_api import Playwright
 
 from helpers.helpers_container import HelpersContainer
-from models.pom.home_page import HomePage
+from models.pom.pages.home_page import HomePage
 
 
 @pytest.fixture(scope="session")
