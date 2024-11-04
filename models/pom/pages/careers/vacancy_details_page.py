@@ -1,3 +1,4 @@
+from enums.playw.objects_states import ElementStates
 from helpers.helpers_container import HelpersContainer
 from models.pom.page_base import PageBase
 
@@ -10,11 +11,11 @@ class VacancyDetailsPage(PageBase):
             page_path="useinsider/")
 
     def get_title(self):
-        self.__label_title.wait_for(state="visible")
+        self.__label_title.wait_for(state=ElementStates.VISIBLE.value)
         return self.__label_title.text_content()
 
     def get_vacancy_location(self):
-        self.__label_location.wait_for(state="visible")
+        self.__label_location.wait_for(state=ElementStates.VISIBLE.value)
         return self.__label_location.text_content()
 
     def _init_locators(self):
