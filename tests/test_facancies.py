@@ -19,13 +19,17 @@ def suit_set_up(set_up):
 
 
 @pytest.mark.regression
-def test_qa_vacancy_can_observe(suit_set_up):
+@pytest.mark.parametrize("location, department", [("Istanbul, Turkey", "Quality Assurance")])
+def test_qa_vacancy_can_observe(suit_set_up, location, department):
     # Expect a title "to contain" a substring.
     careers_page, helpers = suit_set_up
     qa_careers_page = careers_page.goto_qa_careers_via_url()
     expect(qa_careers_page.playwright_page).to_have_title(re.compile(qa_careers_page.page_title))
     opening_positions_page = qa_careers_page.click_button_see_all_qa_jobs()
     expect(opening_positions_page.playwright_page).to_have_title(re.compile(opening_positions_page.page_title))
-    opening_positions_page.set_location("Istanbul, Turkey")
-    assert opening_positions_page.is_department_selected("Quality Assurance") is True
+    opening_positions_page.set_location(location)
+    assert opening_positions_page.is_department_selected(department) is True
+    assert all(department.lower() in title.lower() for title in opening_positions_page.get_jobs_titles())
+    assert all(department.lower() in title.lower() for title in opening_positions_page.get_jobs_departments())
+    assert all(location.lower() in title.lower() for title in opening_positions_page.get_jobs_locations())
     print("done!")
