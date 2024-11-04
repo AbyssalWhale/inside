@@ -2,7 +2,7 @@ from enums.tests.enums_test_run_config_properties import EnumsTestRunConfigPrope
 from helpers.helpers_container import HelpersContainer
 from models.pom.components.navigation_component import NavigationComponent
 from models.pom.page_base import PageBase
-from models.pom.pages.careers_page import CareersPage
+from models.pom.pages.careers.careers_page import CareersPage
 
 
 class HomePage(PageBase):
