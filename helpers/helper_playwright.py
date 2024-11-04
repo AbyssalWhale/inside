@@ -1,5 +1,4 @@
 from playwright.sync_api import Playwright
-import os
 
 from enums.tests.enums_test_run_config_properties import EnumsTestRunConfigProperties
 from helpers.helper_test_run_config import HelperTestRunConfig

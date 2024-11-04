@@ -18,8 +18,11 @@ class HomePage(PageBase):
         pass
 
     def _init_components(self):
-        self.__navigation = NavigationComponent(helpers=self.helpers)
+        pass
 
     def navigate_to_careers(self):
-        self.__navigation.navigate_to_careers()
+        self._navigation.navigate_to_careers()
         return CareersPage(helpers=self.helpers)
+
+    def accept_cookies(self):
+        self._cookies_window.click_accept_all_cookies()

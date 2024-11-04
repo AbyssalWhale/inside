@@ -9,6 +9,7 @@ from models.pom.pages.home_page import HomePage
 def set_up(playwright: Playwright):
     helpers = HelpersContainer(playwright=playwright)
     home_page = HomePage(helpers=helpers)
+    home_page.accept_cookies()
 
     yield home_page, helpers
 
