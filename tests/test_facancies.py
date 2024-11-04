@@ -26,4 +26,6 @@ def test_qa_vacancy_can_observe(suit_set_up):
     expect(qa_careers_page.playwright_page).to_have_title(re.compile(qa_careers_page.page_title))
     opening_positions_page = qa_careers_page.click_button_see_all_qa_jobs()
     expect(opening_positions_page.playwright_page).to_have_title(re.compile(opening_positions_page.page_title))
+    opening_positions_page.set_location("Istanbul, Turkey")
+    assert opening_positions_page.is_department_selected("Quality Assurance") is True
     print("done!")

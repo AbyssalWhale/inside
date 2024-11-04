@@ -9,8 +9,15 @@ class OpeningJobsPage(PageBase):
             page_title=page_title,
             page_path="careers/open-positions")
 
+    def is_department_selected(self, department: str):
+        return self.playwright_page.locator(f"//span[@title='{department}']") is not None
+
+    def set_location(self, location: str):
+        self.__drop_down_open_location.click()
+        self.playwright_page.locator(f"//li[text()='{location}']").click()
+
     def _init_locators(self):
-        pass
+        self.__drop_down_open_location = self.playwright_page.locator("//span[contains(@aria-labelledby, 'location')]")
 
     def _init_components(self):
         pass
