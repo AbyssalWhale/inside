@@ -20,7 +20,7 @@ def suit_set_up(set_up):
 
 @pytest.mark.regression
 @pytest.mark.parametrize("location, department, vacancy", [("Istanbul, Turkey", "Quality Assurance", "Senior Software Quality Assurance Engineer")])
-def test_qa_vacancy_can_observe(suit_set_up, location, department, vacancy):
+def test_qa_vacancy_can_observed(suit_set_up, location, department, vacancy):
     careers_page, helpers = suit_set_up
 
     # go to open positions
