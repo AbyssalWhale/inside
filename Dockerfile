@@ -45,8 +45,8 @@ RUN playwright install-deps
 # Copy the application code to the container
 COPY . .
 
-# Create a directory for test results
-RUN mkdir -p tests-results
+# Create a writable directory for test results
+RUN mkdir -p /app/tests-results && chown -R 1000 /app/tests-results
 
 # Default command (can be overridden when running the container)
 CMD ["pytest"]
