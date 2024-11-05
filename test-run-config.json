@@ -1,5 +1,5 @@
 {
   "url": "https://useinsider.com/",
-  "headless": false,
+  "headless": true,
   "tests-result-dir": "./tests-results/"
 }
