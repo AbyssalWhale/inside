@@ -28,7 +28,7 @@ jobs:
           path: tests-results/
       - name: Publish Python Playwright Tests Results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2.7.0
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           check_name: 🧪 Python Playwright Test Results
           files: |
