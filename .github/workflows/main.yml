@@ -1,0 +1,42 @@
+name: Playwright Tests
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  issues: read
+  checks: write
+  pull-requests: write
+  
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t python-tests .
+      - name: Create tests-results directory
+        run: mkdir -p tests-results
+      - name: Run tests
+        run: |
+          docker run --rm -v $(pwd)/tests-results:/app/tests-results python-tests pytest -m regression --junitxml=tests-results/junit-test-results.xml
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-traces
+          path: tests-results/
+      - name: Publish Python Playwright Tests Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: 🧪 Python Playwright Test Results
+          files: |
+            tests-results/junit-test-results.xml
