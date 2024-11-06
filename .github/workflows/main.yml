@@ -2,6 +2,13 @@ name: Playwright Tests
 on:
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: read
+  issues: read
+  checks: write
+  pull-requests: write
+  
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
