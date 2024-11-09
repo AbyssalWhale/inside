@@ -12,7 +12,15 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
+    env:
+      DOCKER_IMAGE_NAME: regression-tests
+      DOCKER_IMAGE_TAG: latest
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ECR_REGISTRY: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      AWS_ECR_REGISTRY_RESPOSITORY: $AWS_ECR_REGISTRY/$DOCKER_IMAGE_NAME
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,19 +30,17 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t python-tests .
+          docker build -t $DOCKER_IMAGE_NAME .
+          
+      - name: Push to AWS ECR
+        run: |
+          docker tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG $AWS_ECR_REGISTRY:$DOCKER_IMAGE_TAG
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_REGISTRY
+          docker push $AWS_ECR_REGISTRY:$DOCKER_IMAGE_TAG
+
       - name: Create tests-results directory
         run: mkdir -p tests-results
-      - name: Puplish to AWS ECR
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        run: |
-          docker tag python-tests:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/regression-tests:latest
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/regression-tests:latest
+      
       - name: Run tests
         run: |
           docker run --rm -v $(pwd)/tests-results:/app/tests-results python-tests pytest -m regression --junitxml=tests-results/junit-test-results.xml
