@@ -1,0 +1,12 @@
+FROM python:3.13
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN pip install requests
+
+WORKDIR /app
+
+COPY controller.py .
+
+CMD ["python", "controller.py"]
