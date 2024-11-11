@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-controller
+  labels:
+    app: test-controller
+spec:
+  containers:
+    - name: test-controller
+      image: tests-controller:latest
+      imagePullPolicy: Never
+      command: ["python", "controller.py"]
+      env:
+        - name: TEST_RUNNER_URL
+          value: "http://test-runner-service:8080"
+      volumeMounts:
+        - mountPath: /app/tests-results
+          name: test-results
+  volumes:
+    - name: test-results
+      persistentVolumeClaim:
+        claimName: test-results-pvc
