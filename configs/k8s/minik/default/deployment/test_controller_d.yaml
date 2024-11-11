@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-controller
+spec:
+  replicas: 1  # This could be changed programmatically or manually
+  selector:
+    matchLabels:
+      app: test-controller
+  template:
+    metadata:
+      labels:
+        app: test-controller
+    spec:
+      containers:
+      - name: test-controller
+        image: tests-controller:latest
+        imagePullPolicy: Never
+        env:
+        - name: TEST_RUNNER_URL
+          value: "http://test-runner-service:8080/run-test"  # Service URL for the test-runner
+        - name: NODE_COUNT
+          value: "1"  # Default value for node_count, can be updated
+        ports:
+        - containerPort: 8080
