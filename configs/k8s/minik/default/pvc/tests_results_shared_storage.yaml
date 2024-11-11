@@ -1,0 +1,11 @@
+# ensures that when tests are run, the results are saved in a consistent, shared location that can be accessed by both pods.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-results-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

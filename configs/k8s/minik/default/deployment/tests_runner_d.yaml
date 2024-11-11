@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-runner
+  labels:
+    app: test-runner
+spec:
+  replicas: {{node_count}}
+  selector:
+    matchLabels:
+      app: test-runner
+  template:
+    metadata:
+      labels:
+        app: test-runner
+    spec:
+      containers:
+      - name: test-runner
+        image: python-tests:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        env:
+        - name: TEST_RUNNER_URL
+          value: "http://test-runner-service:8080/run-test"

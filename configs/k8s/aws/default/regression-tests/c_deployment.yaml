@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: regression-tests-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: regression-tests
+  template:
+    metadata:
+      labels:
+        app: regression-tests
+    spec:
+      containers:
+      - name: regression-tests
+        image: 899365092108.dkr.ecr.eu-central-1.amazonaws.com/regression-tests:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+        volumeMounts:
+        - name: tests-results
+          mountPath: /app/tests-results
+      volumes:
+      - name: tests-results
+        emptyDir: {}
