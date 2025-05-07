@@ -1,3 +1,41 @@
+# Task Requrements
+Write test cases using any programming language and framework (Python + Selenium is preferable)
+- Visit https://useinsider.com/ and check Insider home page is opened or not
+- Select “Company” menu in navigation bar, select “Careers” and check Career page, its Locations, Teams and Life at Insider blocks are opened or not
+- Go to https://useinsider.com/careers/quality-assurance/, click “See all QA jobs”, filter jobs by Location -  Istanbul, Turkey and department - Quality Assurance, check presence of jobs list
+- Check that all jobs’ Position contains “Quality Assurance”, Department contains “Quality Assurance”, Location contains  “Istanbul, Turkey”
+- Click “View Role” button and check that this action redirects us to Lever Application form page
+  
+Containerize Test Project: Modify your test project to run in a Kubernetes environment using Docker images.
+- Create Docker images for the test project (using a Dockerfile).
+- Ensure that the necessary ports are exposed.
+- Push the Docker images to a container registry (e.g., Docker Hub or Amazon ECR).
+  
+Set up Kubernetes Pods for Selenium Test Execution:
+- Create two distinct pods for your Selenium tests:
+- Test Case Controller Pod: This pod will be responsible for reading and managing test cases.
+- Chrome Node Pod: This pod will run the actual Selenium tests in a headless Chrome browser.
+- The Test Case Controller Pod should be able to pass test cases to the Chrome Node Pod for execution.
+- Configure Inter-Pod Communication using Kubernetes Services or direct DNS to ensure that the Test Controller Pod can communicate with the Chrome Node Pod.
+  
+Create Kubernetes Resources:
+- Use Helm or write YAML files for:
+- Deployment of the Test Case Controller Pod.
+- Deployment of the Chrome Node Pod (using selenium/node-chrome or similar images).
+  
+Ensure that the Chrome Node Pod is dynamically created based on the node_count parameter (min = 1, max = 5).
+Write a Python Script for Kubernetes Deployment and Test Execution:
+- Deploys the Kubernetes resources (Test Controller Pod, Chrome Node Pod) based on the node_count parameter.
+- Passes the test cases from the Test Case Controller Pod to the Chrome Node Pod using inter-pod communication.
+- Checks if the Chrome Node Pod is ready before attempting to run the test cases.Handles error handling and retries during the deployment and test execution process.
+  
+The script should execute Selenium test cases via terminal commands in the Chrome Node Pod using a headless browser (ensure the necessary browser binaries and drivers are included in the pod).
+Create Kubernetes Cluster on AWS:
+- Set up a free-tier t2.micro Linux instance on AWS EC2.
+- Install kubectl and configure it to manage the Kubernetes cluster.
+- Use Amazon EKS to manage the Kubernetes cluster.
+- Deploy your Kubernetes resources and run the test project in the EKS cluster.
+ 
 # Enviroment Requrements
 - [Python](https://www.python.org/downloads/)
 - [PIP](https://pypi.org/project/pip/)
