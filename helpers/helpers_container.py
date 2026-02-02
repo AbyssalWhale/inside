@@ -6,9 +6,10 @@ from helpers.helper_test_run_config import HelperTestRunConfig
 
 
 class HelpersContainer:
-    def __init__(self, playwright: Playwright):
+    def __init__(self, playwright: Playwright, browser_name: str = "chromium"):
         self.system = HelperSystem()
         self.test_run_config = HelperTestRunConfig(system_helper=self.system)
         self.playwright = HelperPlaywright(
             playwright=playwright,
-            test_run_config=self.test_run_config)
+            test_run_config=self.test_run_config,
+            browser_name=browser_name)

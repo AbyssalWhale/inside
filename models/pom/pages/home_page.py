@@ -6,7 +6,7 @@ from models.pom.pages.careers.careers_page import CareersPage
 
 
 class HomePage(PageBase):
-    def __init__(self, helpers: HelpersContainer, page_title="#1 Leader in Individualized, Cross-Channel CX — Insider"):
+    def __init__(self, helpers: HelpersContainer, page_title="Insider One"):
         super().__init__(
             helpers=helpers,
             page_title=page_title,
@@ -15,10 +15,16 @@ class HomePage(PageBase):
             url=helpers.test_run_config.get_property_value(property_name=EnumsTestRunConfigProperties.URL))
 
     def _init_locators(self):
-        pass
+        self.__header = self.playwright_page.locator("header")
+        self.__footer = self.playwright_page.locator("footer")
 
     def _init_components(self):
         pass
+
+    def are_main_blocks_loaded(self):
+        header_visible = self.__header.first.is_visible()
+        footer_visible = self.__footer.first.is_visible()
+        return header_visible and footer_visible
 
     def navigate_to_careers(self):
         self._navigation.navigate_to_careers()
