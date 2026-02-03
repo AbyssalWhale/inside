@@ -1,8 +1,9 @@
 # Insider One QA Test Automation
 
-This project contains two types of tests:
+This project contains 3 types of tests:
 
 - **UI Tests** — Playwright-based browser tests for [insiderone.com](https://insiderone.com/) (Chromium & Firefox)
+- **API Tests** — API tests for the [Petstore Swagger API](https://petstore.swagger.io/v2) using `requests` + `pytest`.
 - **Load Tests** — Locust-based HTTP load tests for search functionality on [n11.com](https://www.n11.com/)
 
 ---
