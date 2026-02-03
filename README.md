@@ -137,6 +137,57 @@ This opens the Trace Viewer with a full timeline of actions, DOM snapshots, netw
 
 ---
 
+## API Tests (Petstore)
+
+Automated CRUD tests for the [Petstore Swagger API](https://petstore.swagger.io/v2) using `requests` + `pytest`.
+
+### Directory Structure
+
+```
+api_tests/
+├── __init__.py        - Package marker
+├── config.py          - Base URL, headers, status codes
+├── pet_builder.py     - Builder pattern for pet payloads
+├── conftest.py        - Fixtures (api_client, created_pet, pet_data)
+├── test_pet_create.py - Create (POST) tests
+├── test_pet_read.py   - Read (GET) tests
+├── test_pet_update.py - Update (PUT/POST) tests
+└── test_pet_delete.py - Delete (DELETE) tests
+```
+
+### Running API Tests
+
+```bash
+# Run all API tests
+pytest -m api
+
+# Run a specific test file
+pytest api_tests/test_pet_create.py
+
+# Run a specific test
+pytest api_tests/test_pet_read.py::TestReadPetPositive::test_get_pet_by_id
+```
+
+### Endpoints Tested
+
+| Method | Endpoint               | Description             |
+|--------|------------------------|-------------------------|
+| POST   | `/pet`                 | Create a new pet        |
+| GET    | `/pet/{petId}`         | Get pet by ID           |
+| GET    | `/pet/findByStatus`    | Find pets by status     |
+| PUT    | `/pet`                 | Update an existing pet  |
+| POST   | `/pet/{petId}`         | Update pet with form    |
+| DELETE | `/pet/{petId}`         | Delete a pet            |
+
+### Adding New Tests
+
+1. Add new test files in `api_tests/` following the `test_pet_*.py` naming convention
+2. Use `PetBuilder` from `pet_builder.py` to construct request payloads
+3. Use the `api_client` fixture for HTTP requests and `created_pet` for tests that need pre-existing data
+4. Mark test classes or functions with `@pytest.mark.api`
+
+---
+
 ## Load Tests (Locust)
 
 HTTP-based load tests using [Locust](https://locust.io/) to test search functionality on https://www.n11.com/.
