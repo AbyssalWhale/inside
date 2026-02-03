@@ -1,56 +1,113 @@
-name: Playwright Tests
+name: All Tests
+
 on:
+  push:
+    branches: [ insider-second-task ]
   pull_request:
-    branches: [ main ]
+    branches: [ insider-second-task ]
 
 permissions:
   contents: read
   issues: read
   checks: write
   pull-requests: write
-  
+
 jobs:
-  build-and-test:
+  ui-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-      - name: Build Docker image
-        run: |
-          docker build -t python-tests .
-          
-      - name: Publish to AWS ECR
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        run: |
-          docker tag python-tests:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/regression-tests:latest
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/regression-tests:latest
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: playwright install --with-deps chromium firefox
 
       - name: Create tests-results directory
         run: mkdir -p tests-results
-      
-      - name: Run tests
-        run: |
-          docker run --rm -v $(pwd)/tests-results:/app/tests-results python-tests pytest -m regression --junitxml=tests-results/junit-test-results.xml
-      
-      - uses: actions/upload-artifact@v4
+
+      - name: Run UI tests
+        run: pytest -m regression --junitxml=tests-results/ui-test-results.xml
+
+      - name: Upload UI test results
         if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces
+          name: ui-test-results
           path: tests-results/
-          
-      - name: Publish Python Playwright Tests Results
+
+      - name: Publish UI Test Results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          check_name: 🧪 Python Playwright Test Results
+          check_name: UI Test Results
           files: |
-            tests-results/junit-test-results.xml
+            tests-results/ui-test-results.xml
+
+  api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run API tests
+        run: pytest -m api --junitxml=tests-results/api-test-results.xml
+
+      - name: Upload API test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: tests-results/api-test-results.xml
+
+      - name: Publish API Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: API Test Results
+          files: |
+            tests-results/api-test-results.xml
+
+  load-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create load-test-results directory
+        run: mkdir -p load-test-results
+
+      - name: Run Load tests
+        env:
+          PYTHONPATH: load_tests
+        run: locust --config load_tests/locust.conf --csv load-test-results/locust --html load-test-results/locust-report.html
+
+      - name: Upload Load test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: load-test-results/

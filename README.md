@@ -258,3 +258,49 @@ locust --config load_tests/locust.conf --csv load_test_results/run1
 ### Configuring Search Terms
 
 Edit `load_tests/config.py` to add, remove, or change search terms. Terms are organized by category (`electronics`, `clothing`, `home_appliances`) and automatically flattened into `ALL_SEARCH_TERMS` for random selection during tests.
+
+---
+
+## Bosun Part
+
+### CI/CD Pipeline
+
+The GitHub Actions pipeline is defined in `.github/workflows/main.yml` and is triggered on **push** and **pull request** events to the `insider-second-task` branch.
+
+The pipeline runs three independent jobs in parallel — no job depends on another, so they execute concurrently for faster feedback.
+
+### Pipeline Jobs
+
+| Job | Description | Command | Artifacts |
+|-----|-------------|---------|-----------|
+| **UI Tests** | Playwright browser tests (Chromium & Firefox) | `pytest -m regression --junitxml=tests-results/ui-test-results.xml` | `ui-test-results` — JUnit XML + Playwright traces |
+| **API Tests** | Petstore API CRUD tests | `pytest -m api --junitxml=tests-results/api-test-results.xml` | `api-test-results` — JUnit XML |
+| **Load Tests** | Locust load tests against n11.com | `locust --config load_tests/locust.conf --csv ... --html ...` | `load-test-results` — CSV stats + HTML report |
+
+### Pipeline Workflow
+
+```
+push / PR to insider-second-task
+            │
+    ┌───────┼───────┐
+    │       │       │
+    ▼       ▼       ▼
+ UI Tests  API    Load
+ (pytest)  Tests  Tests
+           (pytest)(locust)
+    │       │       │
+    ▼       ▼       ▼
+ Upload   Upload  Upload
+ Artifacts Artifacts Artifacts
+    │       │
+    ▼       ▼
+ Publish  Publish
+ JUnit    JUnit
+ Results  Results
+```
+
+### Viewing Results
+
+- **Artifacts**: After a workflow run completes, download artifacts from the **Actions** tab in GitHub. Each job uploads its results as a separate artifact.
+- **PR Check Results**: UI Tests and API Tests publish JUnit results directly to the PR using `EnricoMi/publish-unit-test-result-action`. Look for the **UI Test Results** and **API Test Results** checks on the pull request.
+- **Load Test Report**: Download the `load-test-results` artifact to view the Locust HTML report and CSV statistics locally.
