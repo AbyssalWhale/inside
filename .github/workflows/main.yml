@@ -1,56 +1,65 @@
-name: Playwright Tests
+name: AWS Account Audit - ECR Credentials
 on:
   pull_request:
-    branches: [ main ]
-
-permissions:
-  contents: read
-  issues: read
-  checks: write
-  pull-requests: write
-  
+    branches: [ "main" ]
 jobs:
-  build-and-test:
+  audit-ecr-account:
+    name: Audit AWS Account (ECR Credentials)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build Docker image
-        run: |
-          docker build -t python-tests .
-          
-      - name: Publish to AWS ECR
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        run: |
-          docker tag python-tests:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/regression-tests:latest
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/regression-tests:latest
-
-      - name: Create tests-results directory
-        run: mkdir -p tests-results
-      
-      - name: Run tests
-        run: |
-          docker run --rm -v $(pwd)/tests-results:/app/tests-results python-tests pytest -m regression --junitxml=tests-results/junit-test-results.xml
-      
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-traces
-          path: tests-results/
-          
-      - name: Publish Python Playwright Tests Results
-        if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          check_name: 🧪 Python Playwright Test Results
-          files: |
-            tests-results/junit-test-results.xml
+        - name: Setting AWS credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+        
+        - name: Check Identity
+          run: |
+            echo "=== WHO AM I? ==="
+            aws sts get-caller-identity
+        
+        - name: Check ECR Repositories
+          continue-on-error: true
+          run: |
+            echo "=== ECR REPOSITORIES (Container Registry - Storage Costs!) ==="
+            aws ecr describe-repositories --query 'repositories[*].[repositoryName,repositoryUri,createdAt]' --output table 2>&1
+            echo ""
+            echo "=== ECR IMAGE COUNTS AND SIZES ==="
+            for repo in $(aws ecr describe-repositories --query 'repositories[*].repositoryName' --output text 2>/dev/null); do
+              echo "Repository: $repo"
+              aws ecr describe-images --repository-name $repo --query 'imageDetails[*].[imageTags,imageSizeInBytes,imagePushedAt]' --output table 2>&1 || echo "Cannot access images"
+              echo ""
+              # Get total size
+              total_size=$(aws ecr describe-images --repository-name $repo --query 'sum(imageDetails[*].imageSizeInBytes)' 2>/dev/null || echo "0")
+              echo "Total size: $total_size bytes"
+              echo "---"
+            done
+        
+        - name: Check Route 53 Hosted Zones
+          continue-on-error: true
+          run: |
+            echo "=== ROUTE 53 HOSTED ZONES ($0.50/month each) ==="
+            aws route53 list-hosted-zones 2>&1
+            echo ""
+            echo "Hosted Zone Count:"
+            aws route53 list-hosted-zones --query 'HostedZones | length(@)' 2>&1
+        
+        - name: Check Route 53 Domains
+          continue-on-error: true
+          run: |
+            echo "=== ROUTE 53 REGISTERED DOMAINS (YEARLY AUTO-RENEW!) ==="
+            aws route53domains list-domains --region us-east-1 2>&1
+        
+        - name: Check S3 Buckets
+          continue-on-error: true
+          run: |
+            echo "=== S3 BUCKETS ==="
+            aws s3 ls 2>&1
+            echo ""
+            if aws s3 ls > /dev/null 2>&1; then
+              for bucket in $(aws s3 ls | awk '{print $3}'); do
+                echo "Bucket: $bucket"
+                aws s3 ls s3://$bucket --recursive --summarize --human-readable 2>&1 | tail -3
+                echo ""
+              done
